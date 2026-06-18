@@ -4,6 +4,8 @@ import { putItem } from './put';
 import { query } from './query';
 import { transactWrite } from './transactWrite';
 
+export type { SdkAwsDynamodb } from './SdkAwsDynamodb';
+
 export const dynamodb = {
   delete: deleteItem,
   put: putItem,

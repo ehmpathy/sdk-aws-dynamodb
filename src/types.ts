@@ -1,4 +1,36 @@
+import type { SdkAwsDynamodb } from './dynamodb';
+
 export type LogMethod = (message: string, metadata: any) => void;
+
+/**
+ * context type for simple-dynamodb-client operations.
+ *
+ * @example
+ * ```ts
+ * import * as sdkDynamodbClient from '@aws-sdk/client-dynamodb';
+ * import * as sdkDynamodbDocumentClient from '@aws-sdk/lib-dynamodb';
+ * import { NodeHttpHandler } from '@smithy/node-http-handler';
+ *
+ * const context: SimpleDynamodbContext = {
+ *   aws: {
+ *     dynamodb: {
+ *       sdk: {
+ *         ...sdkDynamodbClient,
+ *         ...sdkDynamodbDocumentClient,
+ *         NodeHttpHandler,
+ *       },
+ *     },
+ *   },
+ * };
+ * ```
+ */
+export interface SimpleDynamodbContext {
+  aws: {
+    dynamodb: {
+      sdk: SdkAwsDynamodb;
+    };
+  };
+}
 
 /**
  * An array of strings containing the list of attributes to retrieve from the table.

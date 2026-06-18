@@ -4,15 +4,20 @@ import { put } from './put';
 import { query } from './query';
 import { startTransaction } from './startTransaction';
 
-export { LogMethod, AttributesToRetrieveInQuery } from './types';
-export { SimpleDynamodbQueryConditions } from './query';
-export { SimpleDynamodbPutConditions } from './put';
-export { SimpleDynamodbDeleteConditions } from './delete';
-export { SimpleDynamodbTransaction } from './startTransaction';
+export type { SimpleDynamodbDeleteConditions } from './delete';
+export type { SdkAwsDynamodb } from './dynamodb';
 export {
-  SimpleDynamodbOperation,
   HelpfulDynamodbError,
+  SimpleDynamodbOperation,
 } from './HelpfulDynamodbError';
+export type { SimpleDynamodbPutConditions } from './put';
+export type { SimpleDynamodbQueryConditions } from './query';
+export type { SimpleDynamodbTransaction } from './startTransaction';
+export type {
+  AttributesToRetrieveInQuery,
+  LogMethod,
+  SimpleDynamodbContext,
+} from './types';
 
 export const simpleDynamodbClient = {
   get,

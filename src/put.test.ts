@@ -1,10 +1,17 @@
-import { HelpfulDynamodbError } from './HelpfulDynamodbError';
 import { putItem } from './dynamodb/put';
+import { HelpfulDynamodbError } from './HelpfulDynamodbError';
 import { put } from './put';
+import type { SimpleDynamodbContext } from './types';
 
 jest.mock('./dynamodb/put');
 const putItemMock = putItem as jest.Mock;
 putItemMock.mockReturnValue({ ConsumedCapacity: '__CONSUMED_CAPACITY__' });
+
+const mockContext: SimpleDynamodbContext = {
+  aws: {
+    dynamodb: { sdk: {} as SimpleDynamodbContext['aws']['dynamodb']['sdk'] },
+  },
+};
 
 describe('put', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -15,32 +22,41 @@ describe('put', () => {
       maxWeight: 821,
       maxPassengers: 821,
     };
-    await put({
-      tableName: 'spaceship',
-      logDebug: jest.fn(),
-      item: spaceship,
-    });
+    await put(
+      {
+        tableName: 'spaceship',
+        logDebug: jest.fn(),
+        item: spaceship,
+      },
+      mockContext,
+    );
 
     // check we called aws sdk correctly
-    expect(putItemMock).toHaveBeenCalledWith({
-      input: {
-        TableName: 'spaceship',
-        Item: spaceship,
-        ConditionExpression: undefined,
-        ExpressionAttributeValues: undefined,
+    expect(putItemMock).toHaveBeenCalledWith(
+      {
+        input: {
+          TableName: 'spaceship',
+          Item: spaceship,
+          ConditionExpression: undefined,
+          ExpressionAttributeValues: undefined,
+        },
       },
-    });
+      mockContext,
+    );
   });
   it('should throw a helpful error when an error occurs', async () => {
     putItemMock.mockRejectedValueOnce(
       new Error('The conditional request failed'),
     );
     try {
-      await put({
-        tableName: 'spaceship',
-        logDebug: jest.fn(),
-        item: { a: true },
-      });
+      await put(
+        {
+          tableName: 'spaceship',
+          logDebug: jest.fn(),
+          item: { a: true },
+        },
+        mockContext,
+      );
       throw new Error('should not reach here');
     } catch (error) {
       if (!(error instanceof Error)) throw error;

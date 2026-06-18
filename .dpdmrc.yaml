@@ -1,0 +1,16 @@
+# dpdm exclude patterns
+# each entry is joined with | to form a single regex for --exclude
+#
+# with --transform flag, type imports are erased before analysis
+# and test files are excluded via glob pattern '!(*.test).ts'
+# so excludes are rarely needed even for devDependencies
+#
+# never exclude prod dependencies — you'd ship cycles to consumers
+#
+# exception: external packages with known internal circular dependencies
+# that we cannot fix (transitive deps with cycles in their own build output)
+exclude:
+  # @aws-crypto/crc32 has internal circular dep: index.js <-> aws_crc32.js
+  # this is within the package itself, not our code
+  # see: https://github.com/aws/aws-sdk-js-crypto-helpers
+  - '@aws-crypto'

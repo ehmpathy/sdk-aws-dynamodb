@@ -1,10 +1,11 @@
-import { HelpfulDynamodbError } from './HelpfulDynamodbError';
 import { del } from './delete';
 import { deleteItem } from './dynamodb/delete';
 import { putItem } from './dynamodb/put';
 import { transactWrite } from './dynamodb/transactWrite';
+import { HelpfulDynamodbError } from './HelpfulDynamodbError';
 import { put } from './put';
 import { startTransaction } from './startTransaction';
+import type { SimpleDynamodbContext } from './types';
 
 const logDebug = () => jest.fn();
 
@@ -20,6 +21,12 @@ transactWriteMock.mockReturnValue({
   ConsumedCapacity: '__CONSUMED_CAPACITY__',
 });
 
+const mockContext: SimpleDynamodbContext = {
+  aws: {
+    dynamodb: { sdk: {} as SimpleDynamodbContext['aws']['dynamodb']['sdk'] },
+  },
+};
+
 describe('beginWriteTransaction', () => {
   it('should be possible to queue a put', async () => {
     const transaction = startTransaction();
@@ -33,7 +40,7 @@ describe('beginWriteTransaction', () => {
     const input = { tableName: 'spaceships', item: { fuel: 9000 }, logDebug };
 
     // input works for normal request
-    await put(input);
+    await put(input, mockContext);
 
     // input works for transaction too
     const transaction = startTransaction();
@@ -48,11 +55,11 @@ describe('beginWriteTransaction', () => {
       logDebug,
     });
   });
-  it('should be possible to interchange queue.put and normal put', async () => {
+  it('should be possible to interchange queue.delete and normal delete', async () => {
     const input = { tableName: 'spaceships', key: { p: 'uuid' }, logDebug };
 
     // input works for normal request
-    await del(input);
+    await del(input, mockContext);
 
     // input works for transaction too
     const transaction = startTransaction();
@@ -81,53 +88,56 @@ describe('beginWriteTransaction', () => {
       item: { p: 'SOIL', s: 721, quantity: 7 },
       logDebug,
     });
-    await transaction.execute({ logDebug });
+    await transaction.execute({ logDebug }, mockContext);
     expect(transactWriteMock).toHaveBeenCalledTimes(1);
-    expect(transactWriteMock).toHaveBeenCalledWith({
-      input: {
-        TransactItems: [
-          {
-            Put: {
-              TableName: 'spaceships',
-              Item: { id: 821, fuel: 9000 },
-              ConditionExpression: undefined,
-              ExpressionAttributeValues: undefined,
-            },
-          },
-          {
-            Put: {
-              TableName: 'spaceport',
-              Item: { spaceships: [{ id: 821 }] },
-              ConditionExpression: undefined,
-              ExpressionAttributeValues: undefined,
-            },
-          },
-          {
-            Delete: {
-              TableName: 'cargo-to-spaceship',
-              Key: {
-                p: 'SOIL',
-                s: 821,
+    expect(transactWriteMock).toHaveBeenCalledWith(
+      {
+        input: {
+          TransactItems: [
+            {
+              Put: {
+                TableName: 'spaceships',
+                Item: { id: 821, fuel: 9000 },
+                ConditionExpression: undefined,
+                ExpressionAttributeValues: undefined,
               },
-              ConditionExpression: undefined,
-              ExpressionAttributeValues: undefined,
             },
-          },
-          {
-            Put: {
-              TableName: 'cargo-to-spaceship',
-              Item: {
-                p: 'SOIL',
-                s: 721,
-                quantity: 7,
+            {
+              Put: {
+                TableName: 'spaceport',
+                Item: { spaceships: [{ id: 821 }] },
+                ConditionExpression: undefined,
+                ExpressionAttributeValues: undefined,
               },
-              ConditionExpression: undefined,
-              ExpressionAttributeValues: undefined,
             },
-          },
-        ],
+            {
+              Delete: {
+                TableName: 'cargo-to-spaceship',
+                Key: {
+                  p: 'SOIL',
+                  s: 821,
+                },
+                ConditionExpression: undefined,
+                ExpressionAttributeValues: undefined,
+              },
+            },
+            {
+              Put: {
+                TableName: 'cargo-to-spaceship',
+                Item: {
+                  p: 'SOIL',
+                  s: 721,
+                  quantity: 7,
+                },
+                ConditionExpression: undefined,
+                ExpressionAttributeValues: undefined,
+              },
+            },
+          ],
+        },
       },
-    });
+      mockContext,
+    );
   });
   it('should throw a helpful error if the transaction failed', async () => {
     transactWriteMock.mockRejectedValueOnce(
@@ -147,7 +157,7 @@ describe('beginWriteTransaction', () => {
       logDebug,
     });
     try {
-      await transaction.execute({ logDebug });
+      await transaction.execute({ logDebug }, mockContext);
       throw new Error('should not reach here');
     } catch (error) {
       if (!(error instanceof Error)) throw error;
@@ -189,6 +199,6 @@ describe('beginWriteTransaction', () => {
       },
       logDebug,
     });
-    await transaction.execute({ logDebug });
+    await transaction.execute({ logDebug }, mockContext);
   });
 });

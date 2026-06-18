@@ -1,14 +1,14 @@
+import type { del } from './delete';
+import {
+  type RelevantTransactWriteItemInput,
+  transactWrite,
+} from './dynamodb/transactWrite';
 import {
   HelpfulDynamodbError,
   SimpleDynamodbOperation,
 } from './HelpfulDynamodbError';
-import { del } from './delete';
-import {
-  RelevantTransactWriteItemInput,
-  transactWrite,
-} from './dynamodb/transactWrite';
-import { put } from './put';
-import { LogMethod } from './types';
+import type { put } from './put';
+import type { LogMethod, SimpleDynamodbContext } from './types';
 
 type PutRequestArgs = Parameters<typeof put>[0];
 type DeleteRequestArgs = Parameters<typeof del>[0];
@@ -24,7 +24,10 @@ export interface SimpleDynamodbTransaction {
   /**
    * executes the queued write items in a transaction
    */
-  execute: ({ logDebug }: { logDebug: LogMethod }) => Promise<void>;
+  execute: (
+    { logDebug }: { logDebug: LogMethod },
+    context: SimpleDynamodbContext,
+  ) => Promise<void>;
   /**
    * a readonly, ISO timestamp for when the transaction was started
    */
@@ -58,16 +61,22 @@ export const startTransaction = (): SimpleDynamodbTransaction => {
           },
         }),
     },
-    execute: async ({ logDebug }: { logDebug: LogMethod }) => {
+    execute: async (
+      { logDebug }: { logDebug: LogMethod },
+      context: SimpleDynamodbContext,
+    ) => {
       try {
         logDebug(`writeTransaction.execute.input`, {
           writeItems: queuedWriteItems,
         });
-        const response = await transactWrite({
-          input: {
-            TransactItems: queuedWriteItems,
+        const response = await transactWrite(
+          {
+            input: {
+              TransactItems: queuedWriteItems,
+            },
           },
-        });
+          context,
+        );
         logDebug(`writeTransaction.execute.output`, {
           success: true,
           writeItems: queuedWriteItems,
