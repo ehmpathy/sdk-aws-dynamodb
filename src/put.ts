@@ -1,15 +1,15 @@
-import { DynamoDB } from 'aws-sdk';
+import type { PutCommandInput } from '@aws-sdk/lib-dynamodb';
 
+import { dynamodb } from './dynamodb';
 import {
   HelpfulDynamodbError,
   SimpleDynamodbOperation,
 } from './HelpfulDynamodbError';
-import { dynamodb } from './dynamodb';
-import { LogMethod } from './types';
+import type { LogMethod } from './types';
 
 export interface SimpleDynamodbPutConditions {
-  ConditionExpression?: DynamoDB.DocumentClient.PutItemInput['ConditionExpression'];
-  ExpressionAttributeValues?: DynamoDB.DocumentClient.PutItemInput['ExpressionAttributeValues'];
+  ConditionExpression?: PutCommandInput['ConditionExpression'];
+  ExpressionAttributeValues?: PutCommandInput['ExpressionAttributeValues'];
 }
 
 export const put = async ({
@@ -20,7 +20,7 @@ export const put = async ({
 }: {
   tableName: string;
   logDebug: LogMethod;
-  item: object;
+  item: NonNullable<PutCommandInput['Item']>;
   putConditions?: SimpleDynamodbPutConditions;
 }) => {
   try {

@@ -1,15 +1,15 @@
-import { DynamoDB } from 'aws-sdk';
+import type { DeleteCommandInput } from '@aws-sdk/lib-dynamodb';
 
+import { dynamodb } from './dynamodb';
 import {
   HelpfulDynamodbError,
   SimpleDynamodbOperation,
 } from './HelpfulDynamodbError';
-import { dynamodb } from './dynamodb';
-import { LogMethod } from './types';
+import type { LogMethod } from './types';
 
 export interface SimpleDynamodbDeleteConditions {
-  ConditionExpression?: DynamoDB.DocumentClient.DeleteItemInput['ConditionExpression'];
-  ExpressionAttributeValues?: DynamoDB.DocumentClient.DeleteItemInput['ExpressionAttributeValues'];
+  ConditionExpression?: DeleteCommandInput['ConditionExpression'];
+  ExpressionAttributeValues?: DeleteCommandInput['ExpressionAttributeValues'];
 }
 
 // note: we use the name "del" here because "delete" is a reserved keyword
@@ -21,7 +21,7 @@ export const del = async ({
 }: {
   tableName: string;
   logDebug: LogMethod;
-  key: DynamoDB.DocumentClient.Key;
+  key: NonNullable<DeleteCommandInput['Key']>;
   deleteConditions?: SimpleDynamodbDeleteConditions;
 }) => {
   try {

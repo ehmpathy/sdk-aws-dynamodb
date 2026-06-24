@@ -1,6 +1,6 @@
-import { HelpfulDynamodbError } from './HelpfulDynamodbError';
 import { del } from './delete';
 import { deleteItem } from './dynamodb/delete';
+import { HelpfulDynamodbError } from './HelpfulDynamodbError';
 
 jest.mock('./dynamodb/delete');
 const deleteItemMock = deleteItem as jest.Mock;

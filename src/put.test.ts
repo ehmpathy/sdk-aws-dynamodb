@@ -1,5 +1,5 @@
-import { HelpfulDynamodbError } from './HelpfulDynamodbError';
 import { putItem } from './dynamodb/put';
+import { HelpfulDynamodbError } from './HelpfulDynamodbError';
 import { put } from './put';
 
 jest.mock('./dynamodb/put');

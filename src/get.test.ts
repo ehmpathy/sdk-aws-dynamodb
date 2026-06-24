@@ -1,26 +1,12 @@
-import { DynamoDB } from 'aws-sdk';
-
 import { get } from './get';
 
-jest.mock('aws-sdk', () => {
-  const putMock = jest.fn();
-  const getPromiseMock = jest.fn();
-  const getMock = jest
-    .fn()
-    .mockImplementation(() => ({ promise: getPromiseMock }));
-  return {
-    DynamoDB: {
-      DocumentClient: jest.fn(() => ({
-        put: putMock,
-        get: getMock,
-      })),
-    },
-  };
-});
+const getMock = jest.fn();
 
-const getMock = new DynamoDB.DocumentClient().get as jest.Mock;
-const getPromiseMock = new DynamoDB.DocumentClient().get({} as any)
-  .promise as jest.Mock;
+jest.mock('./dynamodb/client', () => ({
+  getDocumentClient: jest.fn(() => ({
+    send: getMock,
+  })),
+}));
 
 describe('get', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -33,7 +19,7 @@ describe('get', () => {
       max_weight: '__WEIGHT_FOUND__',
       max_passengers: '__PASSENGERS_FOUND__',
     };
-    getPromiseMock.mockResolvedValueOnce({
+    getMock.mockResolvedValueOnce({
       Item: exampleSavedSpaceship,
     });
 
@@ -52,21 +38,25 @@ describe('get', () => {
     });
 
     // check we called aws sdk correctly
-    expect(getMock).toHaveBeenCalledWith({
-      TableName: 'spaceship',
-      ProjectionExpression:
-        '#u,#registration_number,#name,#max_weight,#max_passengers',
-      ReturnConsumedCapacity: 'TOTAL',
-      Key: { u: '__REG_NUMBER_FOUND__' },
-      ExpressionAttributeNames: {
-        // map each to ensure no naming conflicts
-        '#max_passengers': 'max_passengers',
-        '#max_weight': 'max_weight',
-        '#name': 'name',
-        '#registration_number': 'registration_number',
-        '#u': 'u',
-      },
-    });
+    expect(getMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: {
+          TableName: 'spaceship',
+          ProjectionExpression:
+            '#u,#registration_number,#name,#max_weight,#max_passengers',
+          ReturnConsumedCapacity: 'TOTAL',
+          Key: { u: '__REG_NUMBER_FOUND__' },
+          ExpressionAttributeNames: {
+            // map each to ensure no naming conflicts
+            '#max_passengers': 'max_passengers',
+            '#max_weight': 'max_weight',
+            '#name': 'name',
+            '#registration_number': 'registration_number',
+            '#u': 'u',
+          },
+        },
+      }),
+    );
 
     // check that the returned value was accurate
     expect(spaceship).not.toEqual(null);
