@@ -1,14 +1,14 @@
+import type { del } from './delete';
+import {
+  type RelevantTransactWriteItemInput,
+  transactWrite,
+} from './dynamodb/transactWrite';
 import {
   HelpfulDynamodbError,
   SimpleDynamodbOperation,
 } from './HelpfulDynamodbError';
-import { del } from './delete';
-import {
-  RelevantTransactWriteItemInput,
-  transactWrite,
-} from './dynamodb/transactWrite';
-import { put } from './put';
-import { LogMethod } from './types';
+import type { put } from './put';
+import type { LogMethod } from './types';
 
 type PutRequestArgs = Parameters<typeof put>[0];
 type DeleteRequestArgs = Parameters<typeof del>[0];

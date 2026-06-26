@@ -1,26 +1,12 @@
-import { DynamoDB } from 'aws-sdk';
-
 import { query } from './query';
 
-jest.mock('aws-sdk', () => {
-  const putMock = jest.fn();
-  const queryPromiseMock = jest.fn();
-  const queryMock = jest
-    .fn()
-    .mockImplementation(() => ({ promise: queryPromiseMock }));
-  return {
-    DynamoDB: {
-      DocumentClient: jest.fn(() => ({
-        put: putMock,
-        query: queryMock,
-      })),
-    },
-  };
-});
+const queryMock = jest.fn();
 
-const queryMock = new DynamoDB.DocumentClient().query as jest.Mock;
-const queryPromiseMock = new DynamoDB.DocumentClient().query({} as any)
-  .promise as jest.Mock;
+jest.mock('./dynamodb/client', () => ({
+  getDocumentClient: jest.fn(() => ({
+    send: queryMock,
+  })),
+}));
 
 describe('query', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -33,7 +19,7 @@ describe('query', () => {
       max_weight: '__WEIGHT_FOUND__',
       max_passengers: '__PASSENGERS_FOUND__',
     };
-    queryPromiseMock.mockResolvedValueOnce({
+    queryMock.mockResolvedValueOnce({
       Items: [exampleSavedSpaceship],
     });
 
@@ -57,24 +43,28 @@ describe('query', () => {
     });
 
     // check we called aws sdk correctly
-    expect(queryMock).toHaveBeenCalledWith({
-      TableName: 'spaceship',
-      ProjectionExpression:
-        '#u,#registration_number,#name,#max_weight,#max_passengers',
-      ReturnConsumedCapacity: 'TOTAL',
-      KeyConditionExpression: 'u = :registrationNumber',
-      ExpressionAttributeValues: {
-        ':registrationNumber': '__REGISTRATION_NUMBER__',
-      },
-      ExpressionAttributeNames: {
-        // map each to ensure no naming conflicts
-        '#max_passengers': 'max_passengers',
-        '#max_weight': 'max_weight',
-        '#name': 'name',
-        '#registration_number': 'registration_number',
-        '#u': 'u',
-      },
-    });
+    expect(queryMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: {
+          TableName: 'spaceship',
+          ProjectionExpression:
+            '#u,#registration_number,#name,#max_weight,#max_passengers',
+          ReturnConsumedCapacity: 'TOTAL',
+          KeyConditionExpression: 'u = :registrationNumber',
+          ExpressionAttributeValues: {
+            ':registrationNumber': '__REGISTRATION_NUMBER__',
+          },
+          ExpressionAttributeNames: {
+            // map each to ensure no naming conflicts
+            '#max_passengers': 'max_passengers',
+            '#max_weight': 'max_weight',
+            '#name': 'name',
+            '#registration_number': 'registration_number',
+            '#u': 'u',
+          },
+        },
+      }),
+    );
 
     // check that the returned value was accurate
     expect(spaceships.length).toEqual(1);
@@ -89,7 +79,7 @@ describe('query', () => {
       max_weight: '__WEIGHT_FOUND__',
       max_passengers: '__PASSENGERS_FOUND__',
     };
-    queryPromiseMock.mockResolvedValueOnce({
+    queryMock.mockResolvedValueOnce({
       Items: [exampleSavedSpaceship],
     });
 
@@ -115,26 +105,30 @@ describe('query', () => {
     });
 
     // check we called aws sdk correctly
-    expect(queryMock).toHaveBeenCalledWith({
-      TableName: 'spaceship',
-      ProjectionExpression:
-        '#u,#registration_number,#name,#max_weight,#max_passengers',
-      ReturnConsumedCapacity: 'TOTAL',
-      IndexName: 'max_weight_gsi',
-      KeyConditionExpression: 'max_weight > :max_weight',
-      ExpressionAttributeValues: {
-        ':max_weight': '800',
-      },
-      ExpressionAttributeNames: {
-        // map each to ensure no naming conflicts
-        '#max_passengers': 'max_passengers',
-        '#max_weight': 'max_weight',
-        '#name': 'name',
-        '#registration_number': 'registration_number',
-        '#u': 'u',
-      },
-      Limit: 10,
-    });
+    expect(queryMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: {
+          TableName: 'spaceship',
+          ProjectionExpression:
+            '#u,#registration_number,#name,#max_weight,#max_passengers',
+          ReturnConsumedCapacity: 'TOTAL',
+          IndexName: 'max_weight_gsi',
+          KeyConditionExpression: 'max_weight > :max_weight',
+          ExpressionAttributeValues: {
+            ':max_weight': '800',
+          },
+          ExpressionAttributeNames: {
+            // map each to ensure no naming conflicts
+            '#max_passengers': 'max_passengers',
+            '#max_weight': 'max_weight',
+            '#name': 'name',
+            '#registration_number': 'registration_number',
+            '#u': 'u',
+          },
+          Limit: 10,
+        },
+      }),
+    );
 
     // check that the returned value was accurate
     expect(spaceships.length).toEqual(1);

@@ -1,10 +1,10 @@
-import DynamoDB, { ConsistentRead } from 'aws-sdk/clients/dynamodb';
+import type { GetCommandInput } from '@aws-sdk/lib-dynamodb';
 
 import { dynamodb } from './dynamodb';
-import { AttributesToRetrieveInQuery, LogMethod } from './types';
+import type { AttributesToRetrieveInQuery, LogMethod } from './types';
 
 /**
- * A subset of the DynamoDB.DocumentClient.GetItemInput interface.
+ * A subset of the GetCommandInput interface.
  *
  * This set of keys removes the "legacy" keys, the keys that are already defined for you by this dao (e.g., TableName), and keys that may lead to shooting yourself in the foot (e.g., FilterExpression)
  */
@@ -12,7 +12,7 @@ export interface SimpleDynamodbGetConditions {
   /**
    * Determines the read consistency model: If set to true, then the operation uses strongly consistent reads; otherwise, the operation uses eventually consistent reads. Strongly consistent reads are not supported on global secondary indexes. If you query a global secondary index with ConsistentRead set to true, you will receive a ValidationException.
    */
-  ConsistentRead?: ConsistentRead;
+  ConsistentRead?: GetCommandInput['ConsistentRead'];
 }
 
 export const get = async ({
@@ -25,7 +25,7 @@ export const get = async ({
   tableName: string;
   logDebug: LogMethod;
   attributesToRetrieveInQuery: AttributesToRetrieveInQuery;
-  key: DynamoDB.DocumentClient.Key;
+  key: NonNullable<GetCommandInput['Key']>;
   getConditions?: SimpleDynamodbGetConditions;
 }): Promise<Record<string, any> | null> => {
   // 0. prefix all "attributesToRetrieveInQueries" with "#" to ensure no collisions exist and build up name mapping map
