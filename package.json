@@ -2,7 +2,7 @@
   "name": "simple-dynamodb-client",
   "author": "ehmpathy",
   "description": "A simple, convenient interface for interacting with dynamodb with best practices.",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "repository": "ehmpathy/simple-dynamodb-client",
   "homepage": "https://github.com/ehmpathy/simple-dynamodb-client",
   "keywords": [
