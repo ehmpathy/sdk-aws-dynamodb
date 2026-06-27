@@ -14,7 +14,7 @@ export type { SimpleDynamodbQueryConditions } from './query';
 export type { SimpleDynamodbTransaction } from './startTransaction';
 export type { AttributesToRetrieveInQuery, LogMethod } from './types';
 
-export const simpleDynamodbClient = {
+export const sdkAwsDynamodb = {
   get,
   query,
   put,

@@ -42,7 +42,7 @@ export const getResources = async (): Promise<DomainEntity<any>[]> => {
   // declare the repo
   const repo = DeclaredGithubRepo.as({
     owner: 'ehmpathy',
-    name: 'simple-dynamodb-client',
+    name: 'sdk-aws-dynamodb',
     description: pkg.description ?? null,
     visibility: pkg.private === true ? 'private' : 'public',
     private: pkg.private ?? false, // todo: why do we have to specify this twice?
