@@ -2,7 +2,7 @@
   "name": "sdk-aws-dynamodb",
   "author": "ehmpathy",
   "description": "a pit-of-success sdk for aws dynamodb. simple, practiced, and helpful.",
-  "version": "0.10.4",
+  "version": "0.11.0",
   "repository": "ehmpathy/sdk-aws-dynamodb",
   "homepage": "https://github.com/ehmpathy/sdk-aws-dynamodb",
   "keywords": [
